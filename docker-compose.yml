@@ -12,6 +12,7 @@ volumes:
 services:
   jenkins: 
     image: jenkins/jenkins:lts-jdk11
+    container_name: jenkins
     restart: always
     networks:
       - jenkins
@@ -33,6 +34,7 @@ services:
 
   dind:
     image: docker:dind
+    container_name: dind
     privileged: true
     restart: always
     networks: 
