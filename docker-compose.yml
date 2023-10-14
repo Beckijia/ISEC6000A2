@@ -1,0 +1,52 @@
+version: "3.1"
+
+networks:
+  jenkins: 
+
+volumes:
+  jenkins-data:
+  jenkins-docker-certs:
+  docker-certs-client:
+  docker-certs-ca:
+
+services:
+  jenkins: 
+    image: jenkins/jenkins:lts-jdk11
+    restart: always
+    networks:
+      - jenkins
+    user: root
+    ports:
+      - 8080:8080
+      - 50000:50000
+    tty: true
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - docker-certs-client:/certs/client:ro
+      - /usr/bin/docker:/usr/bin/docker
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+    depends_on:
+      - dind 
+
+  dind:
+    image: docker:dind
+    privileged: true
+    restart: always
+    networks: 
+      jenkins:
+        aliases:
+          - docker
+    ports:
+      - 2376:2376
+    user: root
+    tty: true
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - docker-certs-client:/certs/client
+      - docker-certs-ca:/certs/ca
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+
